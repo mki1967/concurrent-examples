@@ -13,8 +13,8 @@ with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
            Put_Line ("Task 1");
          end loop;
        end SimpleTask1;
-       task SimpleTask2;
 
+       task SimpleTask2;
        task body SimpleTask2 is
        G : Generator;
        begin
