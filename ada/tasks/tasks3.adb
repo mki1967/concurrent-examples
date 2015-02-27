@@ -14,20 +14,20 @@ procedure Tasks3 is
       end loop;
    end SimpleTask_Type;
 
-   type TasksArray_Type is array (1 .. 4) of access SimpleTask_Type;
+   type TasksArray_Type is array ( Positive range <>) of access SimpleTask_Type;
    type TA_Access_Type is access TasksArray_Type;
 
-   function Init_TasksArray return TA_Access_Type is
-      TA_Ptr: TA_Access_Type;
+   function Init_TasksArray( Size: integer :=4) return TA_Access_Type is
+      TA_Ptr: TA_Access_Type ;
    begin
-      TA_Ptr := new TasksArray_Type;
-      for I in 1 .. 4 loop
+      TA_Ptr := new TasksArray_Type( 1 .. Size);
+      for I in TA_Ptr.all'Range loop
 	 TA_Ptr.all(I) := new SimpleTask_Type(I);
       end loop;
       return TA_Ptr;
    end;
 
-   TasksArray: TasksArray_Type := Init_TasksArray.all ;
+   TasksArray: TasksArray_Type := Init_TasksArray(5).all ;
 
 begin
    null;
