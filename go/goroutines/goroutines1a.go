@@ -1,4 +1,4 @@
-/* przerobine z https://gobyexample.com/goroutines */
+/* tworzenie wielu wątków */
 package main
 
 import "fmt"

@@ -1,4 +1,4 @@
-/* przerobine z https://gobyexample.com/goroutines */
+/* pojemność kanału */
 package main
 
 import "fmt"

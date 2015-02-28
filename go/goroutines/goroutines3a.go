@@ -1,4 +1,4 @@
-/* przerobine z https://gobyexample.com/goroutines */
+/* współdzielenie kanału */
 package main
 
 import "fmt"

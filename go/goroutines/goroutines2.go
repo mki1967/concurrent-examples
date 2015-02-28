@@ -1,4 +1,4 @@
-/* przerobine z https://gobyexample.com/goroutines */
+/* wspólna zmienna */
 package main
 
 import "fmt"

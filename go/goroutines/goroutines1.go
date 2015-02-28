@@ -1,4 +1,5 @@
-/* przerobine z https://gobyexample.com/goroutines */
+/* wątki współbieżne
+ zajrzeć na  https://gobyexample.com/goroutines */
 package main
 
 import "fmt"

@@ -1,4 +1,4 @@
-/* przerobine z https://gobyexample.com/goroutines */
+/* select z timeout-em */
 package main
 
 import "fmt"
