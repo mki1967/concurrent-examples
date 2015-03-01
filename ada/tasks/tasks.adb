@@ -1,13 +1,16 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
+with Random_Seeds; use Random_Seeds;
 
 procedure Tasks is
-
+   
+   Seeds : Seed_Array_Type(1..2) := Make_Seeds(2);
+   
    task SimpleTask1;
    task body SimpleTask1 is
       G : Generator;
    begin
-      Reset(G); -- Start the generator in a unique state in each run
+      Reset(G, Seeds(1) ); 
       loop
 	 delay 0.1+Duration(3.0*Random(G));
 	 Put_Line ("Task 1");
@@ -18,7 +21,7 @@ procedure Tasks is
    task body SimpleTask2 is
       G : Generator;
    begin
-      Reset(G); -- Start the generator in a unique state in each run
+      Reset(G, Seeds(2));
       loop
 	 delay 0.1+Duration(3.0*Random(G));
 	 Put_Line ("Task 2");
@@ -26,6 +29,8 @@ procedure Tasks is
    end SimpleTask2;
 
 begin
+   Put_Line(Integer'Image(Seeds(1)));
+   Put_Line(Integer'Image(Seeds(2)));
    null;
 end Tasks;
 
