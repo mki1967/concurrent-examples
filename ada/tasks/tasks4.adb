@@ -1,7 +1,10 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
+with Random_Seeds; use Random_Seeds;
 
 procedure Tasks4 is
+   
+   Seeds : Seed_Array_Type(1..2) := Make_Seeds(2);
    
    Shared_Variable: Float := 0.0 ; 
    
@@ -10,7 +13,7 @@ procedure Tasks4 is
       G : Generator;
       V : Float;
    begin
-      Reset(G); 
+      Reset(G, Seeds(1) ); 
       loop
 	 delay 0.1+Duration(3.0*Random(G));
 	 V := Random(G);
@@ -24,7 +27,7 @@ procedure Tasks4 is
       G : Generator;
       V2 : Float;
    begin
-      Reset(G);
+      Reset(G, Seeds(2) );
       loop
 	 delay 0.1+Duration(3.0*Random(G));
 	 V2 := Shared_Variable;

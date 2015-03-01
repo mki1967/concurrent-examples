@@ -1,22 +1,11 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
+with Random_Seeds; use Random_Seeds;
 
 procedure Tasks5 is
-   Seed1: Integer;
-   Seed2: Integer;   
-   GG : Generator ; -- global random generator
-   function Init_Seeds  return Integer is
-   begin
-      Reset(GG);
-      Seed1 := Integer( 1.0E6 * Random(GG)) ;
-      Seed2 := Integer( 1.0E6 * Random(GG)) ;
-      Put_Line("Seed1 = " & Integer'Image(Seed1) & ", Seed2 = " & Integer'Image(Seed2) );
-      return Seed1+Seed2;
-   end Init_Seeds;
+   Seeds : Seed_Array_Type(1..2) := Make_Seeds(2);
    
-   Tmp: Integer := Init_Seeds ; -- unused variable 
-   
-   task SimpleTask1 is 
+   task SimpleTask1 is -- server
       entry Exchange_Values( V_In: in Float; V_Out: out Float ) ;
    end  SimpleTask1;
    
@@ -24,7 +13,7 @@ procedure Tasks5 is
       G : Generator;
       V : Float;
    begin
-      Reset(G, Seed1);
+      Reset(G, Seeds(1) );
       loop
 	 delay 0.1+Duration(3.0*Random(G));
 	 V := Random(G);
@@ -32,17 +21,21 @@ procedure Tasks5 is
 	 accept Exchange_Values( V_In: in Float; V_Out: out Float ) do
 	    V_Out := V;
 	    V := V_In;
+	    Put_Line("Exchanging: " &  
+		       Float'Image( V_In ) &
+		       Float'Image( V_Out ) );
+
 	 end Exchange_Values;
 	 Put_Line ( "Task 1: received " & Float'Image( V ) );	 
       end loop;
    end SimpleTask1;
 
-   task SimpleTask2;
-   task body SimpleTask2 is
+   task SimpleTask2; 
+   task body SimpleTask2 is -- client
       G : Generator;
       V2 : Float;
    begin
-      Reset(G, Seed2); 
+      Reset(G, Seeds(2) ); 
       loop
 	 delay 0.1+Duration(3.0*Random(G));
 	 V2 := Random(G) ;
