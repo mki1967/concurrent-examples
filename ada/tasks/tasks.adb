@@ -29,8 +29,6 @@ procedure Tasks is
    end SimpleTask2;
 
 begin
-   Put_Line(Integer'Image(Seeds(1)));
-   Put_Line(Integer'Image(Seeds(2)));
    null;
 end Tasks;
 
