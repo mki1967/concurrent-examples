@@ -1,0 +1,12 @@
+project Tasks is
+   for Main use (
+                 "tasks.adb",
+                 "tasks2.adb",
+                 "tasks3.adb",
+                 "tasks4.adb",
+                 "tasks5.adb",
+                 "tasks6.adb",
+                 "tasks7.adb"
+                );
+end Tasks;
+
