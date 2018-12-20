@@ -1,4 +1,6 @@
 *~
 *.o
 *.class
+# Ada Library Information
+*.ali
 
