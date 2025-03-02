@@ -35,25 +35,25 @@ procedure  Travelers is
   end record;	   
 
   -- elementary steps
-  procedure MoveDown( Position: in out Position_Type ) is
+  procedure Move_Down( Position: in out Position_Type ) is
   begin
     Position.Y := ( Position.Y + 1 ) mod Board_Height;
-  end MoveDown;
+  end Move_Down;
 
-  procedure MoveUp( Position: in out Position_Type ) is
+  procedure Move_Up( Position: in out Position_Type ) is
   begin
     Position.Y := ( Position.Y + Board_Height - 1 ) mod Board_Height;
-  end MoveUp;
+  end Move_Up;
 
-  procedure MoveRight( Position: in out Position_Type ) is
+  procedure Move_Right( Position: in out Position_Type ) is
   begin
     Position.X := ( Position.X + 1 ) mod Board_Width;
-  end MoveRight;
+  end Move_Right;
 
-  procedure MoveLeft( Position: in out Position_Type ) is
+  procedure Move_Left( Position: in out Position_Type ) is
   begin
     Position.X := ( Position.X + Board_Width - 1 ) mod Board_Width;
-  end MoveLeft;
+  end Move_Left;
 
   -- traces of travelers
   type Trace_Type is record 	      
@@ -69,6 +69,39 @@ procedure  Travelers is
     Last: Integer := -1;
     Trace_Array: Trace_Array_type ;
   end record; 
+
+
+  procedure Print_Trace( Trace : Trace_Type ) is
+  begin
+    Put_Line(
+        Duration'Image( Trace.Time_Stamp ) & " " &
+        Integer'Image( Trace.Id ) & " " &
+        Integer'Image( Trace.Position.X ) & " " &
+        Integer'Image( Trace.Position.Y ) & " " &
+        Character'Image( Trace.Symbol )       
+      );
+  end Print_Trace;
+
+  procedure Print_Traces( Traces : Traces_Sequence_Type ) is
+  begin
+    for I in 0 .. Traces.Last loop
+      Print_Trace( Traces.Trace_Array( I ) );
+    end loop;
+  end Print_Traces;
+
+  -- task Printer collects and prints reports of traces
+  task Printer is
+    entry Report( Traces : Traces_Sequence_Type );
+  end Printer;
+  
+  task body Printer is 
+  begin
+    for I in 1 .. 2 loop -- range for TESTS !!!
+        accept Report( Traces : Traces_Sequence_Type ) do
+          Print_Traces( Traces );
+        end Report;
+      end loop;
+  end Printer;
 
 
   -- travelers
@@ -101,6 +134,24 @@ procedure  Travelers is
           Symbol => Traveler.Symbol
         );
     end Store_Trace;
+    
+    procedure Make_Step is
+      N : Integer; 
+    begin
+      N := Integer( Float'Floor(4.0 * Random(G)) );    
+      case N is
+        when 0 =>
+          Move_Up( Traveler.Position );
+        when 1 =>
+          Move_Down( Traveler.Position );
+        when 2 =>
+          Move_Left( Traveler.Position );
+        when 3 =>
+          Move_Right( Traveler.Position );
+        when others =>
+          Put_Line( " ?????????????? " & Integer'Image( N ) );
+        end case;
+    end Make_Step;
 
   begin
     accept Init(Id: Integer; Seed: Integer; Symbol: Character) do
@@ -109,8 +160,8 @@ procedure  Travelers is
       Traveler.Symbol := Symbol;
       -- Random initial position:
       Traveler.Position := (
-          X => Integer( Float(Board_Width) * Random(G) ),
-          Y => Integer( Float(Board_Height) * Random(G) )          
+          X => Integer( Float'Floor( Float( Board_Width )  * Random(G)  ) ),
+          Y => Integer( Float'Floor( Float( Board_Height ) * Random(G) ) )          
         );
       Store_Trace; -- store starting position
       -- Number of steps to be made by the traveler  
@@ -125,24 +176,25 @@ procedure  Travelers is
     end Start;
 
     for Step in 1 .. Nr_of_Steps loop
-      delay 0.05+Duration(0.05 * Random(G)); 
+      delay 0.05+Duration(0.05 * Random(G)); -- TODO ...
       -- do action ...
+      Make_Step;
+      Store_Trace;
       Time_Stamp := To_Duration ( Clock - Start_Time ); -- reads global clock
-      Put_Line (
-                Duration'Image( Time_Stamp ) &" "&
-                Integer'Image(Traveler.Id) &" "&
-                Character'Image(Traveler.Symbol) &" "&
-                Integer'Image(Step) );
     end loop;
+    Printer.Report( Traces );
   end Traveler_Task_Type;
-
 
   Test_A, Test_B : Traveler_Task_Type; -- for tests
 
-
-begin
+begin 
   -- Put_Line( "Duration'Small =" & Duration'Image(Duration'Small) );
-
+  Put_Line(
+      "-1 "&
+      Integer'Image( Nr_Of_Travelers ) &" "&
+      Integer'Image( Board_Width ) &" "&
+      Integer'Image( Board_Height )      
+    );
   Test_A.Init( 0, Seeds(1), 'A' ); -- test
   Test_B.Init( 0, Seeds(2), 'B' ); -- test
 
