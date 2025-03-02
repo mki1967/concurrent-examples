@@ -1,13 +1,32 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 with Random_Seeds; use Random_Seeds;
+with Ada.Real_Time; use Ada.Real_Time;
 
 procedure  Travelers is
+
+
+-- Travelers moving on the board
+
+  Nr_Of_Travelers : constant Integer :=20;	
+
+  Min_Steps : constant Integer := 10 ;
+  Max_Steps : constant Integer := 100 ;
 
 -- 2D Board with torus topology
 
   Board_Width  : constant Integer := 20;
   Board_Height : constant Integer := 20;
+
+-- Timing
+
+  Start_Time : Time := Clock;  -- global startnig time
+
+-- Random seeds for the tasks' random number generators
+ 
+  Seeds : Seed_Array_Type(1..Nr_Of_Travelers) := Make_Seeds(Nr_Of_Travelers);
+
+-- Types, procedures and functions
 
   type Position_Type is record	
     X: Integer range 0 .. Board_Width - 1; 
@@ -34,11 +53,13 @@ procedure  Travelers is
     Position.X := ( Position.X + Board_Width - 1 ) mod Board_Width;
   end MoveLeft;
 
--- Travelers moving on the board
+  type Trace_Type is record 	      
+    Time_Stamp:  Time;	      
+    Id : Integer;
+    Position: Position_Type;      
+    Symbol: Character;	      
+  end record;	      
 
-  Nr_Of_Travelers : constant Integer :=20;	
-
-  Seeds : Seed_Array_Type(1..Nr_Of_Travelers) := Make_Seeds(Nr_Of_Travelers);
 
   type Traveler_Type is record
     Id: Integer;
@@ -52,26 +73,40 @@ procedure  Travelers is
   end Traveler_Task_Type;	
 
   task body Traveler_Task_Type is
-      G : Generator;
-      Traveler: Traveler_Type;
+    G : Generator;
+    Traveler : Traveler_Type;
+    Time_Stamp : Duration;
+    Nr_of_Steps: Integer;
   begin
     accept Init(Id: Integer; Seed: Integer; Symbol: Character) do
       Reset(G, Seed); 
       Traveler.Id := Id;
       Traveler.Symbol := Symbol;
     end Init;
+    Nr_of_Steps := Min_Steps + Integer( Float(Max_Steps - Min_Steps) * Random(G));
 
-    loop
-      delay 0.1+Duration(3.0*Random(G));
-      Put_Line ("Task " & 
-                Integer'Image(Traveler.Id) &
-                Character'Image(Traveler.Symbol) );
+    for Step in 1 .. Nr_of_Steps loop
+      delay 0.05+Duration(0.05 * Random(G)); 
+      -- do action ...
+      Time_Stamp := To_Duration ( Clock - Start_Time ); -- reads global clock
+      Put_Line (
+                Duration'Image( Time_Stamp ) &" "&
+                Integer'Image(Traveler.Id) &" "&
+                Character'Image(Traveler.Symbol) &" "&
+                Integer'Image(Step) );
     end loop;
   end Traveler_Task_Type;
 
-  Test : Traveler_Task_Type; -- test
+
+  Test_A, Test_B : Traveler_Task_Type; -- for tests
+
+
 begin
-  Test.Init( 0, Seeds(1), 'T' ); -- test
+  -- Put_Line( "Duration'Small =" & Duration'Image(Duration'Small) );
+
+  Test_A.Init( 0, Seeds(1), 'A' ); -- test
+  Test_B.Init( 0, Seeds(2), 'B' ); -- test
+
   null;
 end Travelers;
 
