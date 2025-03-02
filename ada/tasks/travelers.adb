@@ -28,11 +28,13 @@ procedure  Travelers is
 
 -- Types, procedures and functions
 
+  -- Postitions on the board
   type Position_Type is record	
     X: Integer range 0 .. Board_Width - 1; 
     Y: Integer range 0 .. Board_Height - 1; 
   end record;	   
 
+  -- elementary steps
   procedure MoveDown( Position: in out Position_Type ) is
   begin
     Position.Y := ( Position.Y + 1 ) mod Board_Height;
@@ -53,14 +55,23 @@ procedure  Travelers is
     Position.X := ( Position.X + Board_Width - 1 ) mod Board_Width;
   end MoveLeft;
 
+  -- traces of travelers
   type Trace_Type is record 	      
-    Time_Stamp:  Time;	      
+    Time_Stamp:  Duration;	      
     Id : Integer;
     Position: Position_Type;      
     Symbol: Character;	      
   end record;	      
 
+  type Trace_Array_type is  array(0 .. Max_Steps) of Trace_Type;
 
+  type Traces_Sequence_Type is record
+    Last: Integer := -1;
+    Trace_Array: Trace_Array_type ;
+  end record; 
+
+
+  -- travelers
   type Traveler_Type is record
     Id: Integer;
     Symbol: Character;
@@ -70,6 +81,7 @@ procedure  Travelers is
 
   task type Traveler_Task_Type is	
     entry Init(Id: Integer; Seed: Integer; Symbol: Character);
+    entry Start;
   end Traveler_Task_Type;	
 
   task body Traveler_Task_Type is
@@ -77,13 +89,40 @@ procedure  Travelers is
     Traveler : Traveler_Type;
     Time_Stamp : Duration;
     Nr_of_Steps: Integer;
+    Traces: Traces_Sequence_Type; 
+
+    procedure Store_Trace is
+    begin  
+      Traces.Last := Traces.Last + 1;
+      Traces.Trace_Array( Traces.Last ) := ( 
+          Time_Stamp => Time_Stamp,
+          Id => Traveler.Id,
+          Position => Traveler.Position,
+          Symbol => Traveler.Symbol
+        );
+    end Store_Trace;
+
   begin
     accept Init(Id: Integer; Seed: Integer; Symbol: Character) do
       Reset(G, Seed); 
       Traveler.Id := Id;
       Traveler.Symbol := Symbol;
+      -- Random initial position:
+      Traveler.Position := (
+          X => Integer( Float(Board_Width) * Random(G) ),
+          Y => Integer( Float(Board_Height) * Random(G) )          
+        );
+      Store_Trace; -- store starting position
+      -- Number of steps to be made by the traveler  
+      Nr_of_Steps := Min_Steps + Integer( Float(Max_Steps - Min_Steps) * Random(G));
+      -- Time_Stamp of initialization
+      Time_Stamp := To_Duration ( Clock - Start_Time ); -- reads global clock
     end Init;
-    Nr_of_Steps := Min_Steps + Integer( Float(Max_Steps - Min_Steps) * Random(G));
+    
+    -- wait for initialisations of the remaining tasks:
+    accept Start do
+      null;
+    end Start;
 
     for Step in 1 .. Nr_of_Steps loop
       delay 0.05+Duration(0.05 * Random(G)); 
@@ -106,6 +145,9 @@ begin
 
   Test_A.Init( 0, Seeds(1), 'A' ); -- test
   Test_B.Init( 0, Seeds(2), 'B' ); -- test
+
+  Test_A.Start; -- test
+  Test_B.Start; -- test
 
   null;
 end Travelers;
