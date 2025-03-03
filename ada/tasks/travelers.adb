@@ -8,10 +8,13 @@ procedure  Travelers is
 
 -- Travelers moving on the board
 
-  Nr_Of_Travelers : constant Integer :=20;	
+  Nr_Of_Travelers : constant Integer :=10;
 
   Min_Steps : constant Integer := 10 ;
   Max_Steps : constant Integer := 100 ;
+
+  Min_Delay : constant Duration := 0.01;
+  Max_Delay : constant Duration := 0.05;
 
 -- 2D Board with torus topology
 
@@ -72,13 +75,14 @@ procedure  Travelers is
 
 
   procedure Print_Trace( Trace : Trace_Type ) is
+    Symbol : String := ( ' ', Trace.Symbol );
   begin
     Put_Line(
         Duration'Image( Trace.Time_Stamp ) & " " &
         Integer'Image( Trace.Id ) & " " &
         Integer'Image( Trace.Position.X ) & " " &
         Integer'Image( Trace.Position.Y ) & " " &
-        Character'Image( Trace.Symbol )       
+        ( ' ', Trace.Symbol ) -- print as string to avoid: '
       );
   end Print_Trace;
 
@@ -96,7 +100,7 @@ procedure  Travelers is
   
   task body Printer is 
   begin
-    for I in 1 .. 2 loop -- range for TESTS !!!
+    for I in 1 .. Nr_Of_Travelers loop -- range for TESTS !!!
         accept Report( Traces : Traces_Sequence_Type ) do
           Print_Traces( Traces );
         end Report;
@@ -154,7 +158,9 @@ procedure  Travelers is
     end Make_Step;
 
   begin
+    -- Put_Line("Before Init: "); -- debug
     accept Init(Id: Integer; Seed: Integer; Symbol: Character) do
+      -- Put_Line("Init: " & Integer'Image(Id) & Character'Image( Symbol ) ); -- debug
       Reset(G, Seed); 
       Traveler.Id := Id;
       Traveler.Symbol := Symbol;
@@ -175,8 +181,8 @@ procedure  Travelers is
       null;
     end Start;
 
-    for Step in 1 .. Nr_of_Steps loop
-      delay 0.05+Duration(0.05 * Random(G)); -- TODO ...
+    for Step in 0 .. Nr_of_Steps loop
+      delay Min_Delay+(Max_Delay-Min_Delay)*Duration(Random(G)); -- TODO ...
       -- do action ...
       Make_Step;
       Store_Trace;
@@ -185,22 +191,40 @@ procedure  Travelers is
     Printer.Report( Traces );
   end Traveler_Task_Type;
 
-  Test_A, Test_B : Traveler_Task_Type; -- for tests
 
+-- local for main task
+
+--  Travel_Tasks: array (0 .. Nr_Of_Travelers-1) of access Traveler_Task_Type; -- for tests
+  Travel_Tasks: array (0 .. Nr_Of_Travelers-1) of Traveler_Task_Type; -- for tests
+  Symbol : Character := 'A';
 begin 
   -- Put_Line( "Duration'Small =" & Duration'Image(Duration'Small) );
+  
+  -- Prit the line with the parameters needed for display script:
   Put_Line(
       "-1 "&
       Integer'Image( Nr_Of_Travelers ) &" "&
       Integer'Image( Board_Width ) &" "&
       Integer'Image( Board_Height )      
     );
-  Test_A.Init( 0, Seeds(1), 'A' ); -- test
-  Test_B.Init( 0, Seeds(2), 'B' ); -- test
 
-  Test_A.Start; -- test
-  Test_B.Start; -- test
+-- create access tasks
+--  for I in Travel_Tasks'Range loop
+--    Put_Line("creating in main: " & Integer'Image(I)); -- debug
+--    Travel_Tasks(I):= new Traveler_Task_Type;
+--  end loop;
 
-  null;
+  -- init tarvelers tasks
+  for I in Travel_Tasks'Range loop
+    -- Put_Line("Init in main: " & Integer'Image(I) & Character'Image( Symbol )); -- debug
+    Travel_Tasks(I).Init( I, Seeds(I+1), Symbol );   -- `Seeds(I+1)` is ugly :-(
+    Symbol := Character'Succ( Symbol );
+  end loop;
+
+  -- start tarvelers tasks
+  for I in Travel_Tasks'Range loop
+    Travel_Tasks(I).Start;
+  end loop;
+
 end Travelers;
 
