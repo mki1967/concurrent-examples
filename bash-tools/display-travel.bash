@@ -49,10 +49,10 @@ H_LINE=$(h_line);
 
 function line_y {
     Y=${1}
-    echo -n '|'
+    echo -n '.'
     for (( X=0; X < WIDTH; X++ ))
     do
-      echo -n "${SYMBOL_ID[${DISPLAY[$(d_idx $X $Y)]}]}"' |';
+      echo -n "${SYMBOL_ID[${DISPLAY[$(d_idx $X $Y)]}]}"'.';
     done;
     echo
 }
@@ -97,10 +97,10 @@ function display_print { # print current display
 
   for (( Y=0; Y < HEIGHT; Y++ )) 
   do
-    echo ${H_LINE};
+    # echo ${H_LINE};
     echo ${LINE_Y[${Y}]};
   done;
-  echo ${H_LINE};
+  # echo ${H_LINE};
 }
 
 
