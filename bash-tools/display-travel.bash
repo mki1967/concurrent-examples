@@ -22,9 +22,9 @@ declare -i HEIGHT=${ARGS[3]:? 'display height missing'}
 declare -a DISPLAY
 declare -a LAST_X
 declare -a LAST_Y
-declare -a COVERED_BY
-declare -a COVERS
-declare -a SYMBOL
+declare -a BELOW # BELOW[${ID}] is covered by ${ID}
+declare -a ABOVE # ABOVE[${ID}] ABOVE ${ID}
+declare -a SYMBOL # SYMBOL ASSIGNED TO ${ID}
 declare -i START_STEP=1 # The first step in 'travel history'
 
 # init empty DISPLAY
@@ -34,30 +34,6 @@ function d_idx {  # index in DISPLAY for arguments: x y - coordimates
   Y=${2}
   echo $(( Y * WIDTH + X )) 
   # echo $X $Y
-}
-
-
-function display_reset { # reset the display
-  DISPLAY[$(d_idx WIDTH HEIGHT)]=${TRAVELERS} # space on the 'hidden' position
-  # clean screen
-  for (( Y=0; Y < HEIGHT; Y++ )) 
-  do
-    for (( X=0; X < WIDTH; X++ ))
-    do
-      DISPLAY[$(d_idx $X $Y)]=${TRAVELERS}; # ${TRAVELERS} is ID of empty space
-    done;
-  done;
-  
-  # Initially, all the travelers are on the 'hidden' position
-  for (( ID=0; ID <= TRAVELERS; ID++ ))
-  do
-    COVERS[${ID}]=${TRAVELERS};
-    COVERED_BY[${ID}]=${TRAVELERS};
-    LAST_X[${ID}]=${WIDTH};
-    LAST_Y[${ID}]=${HEIGHT};
-    SYMBOL_ID[${ID}]='?';
-  done;    
-  SYMBOL_ID[${TRAVELERS}]='.' # ${TRAVELERS} is ID of empty space
 }
 
 function h_line {
@@ -83,11 +59,38 @@ function line_y {
 
 declare -a LINE_Y;
 
-function display_print { # print current display
+
+function display_reset { # reset the display
+  DISPLAY[$(d_idx WIDTH HEIGHT)]=${TRAVELERS} # space on the 'hidden' position
+  # clean screen
+  for (( Y=0; Y < HEIGHT; Y++ )) 
+  do
+    for (( X=0; X < WIDTH; X++ ))
+    do
+      DISPLAY[$(d_idx $X $Y)]=${TRAVELERS}; # ${TRAVELERS} is ID of empty space
+    done;
+  done;
+  
+  # Initially, all the travelers are on the 'hidden' position
+  for (( ID=0; ID <= TRAVELERS; ID++ ))
+  do
+    ABOVE[${ID}]=${TRAVELERS};
+    BELOW[${ID}]=${TRAVELERS};
+    LAST_X[${ID}]=${WIDTH};
+    LAST_Y[${ID}]=${HEIGHT};
+    SYMBOL_ID[${ID}]='?';
+  done;    
+  SYMBOL_ID[${TRAVELERS}]='.' # ${TRAVELERS} is ID of empty space
+
   for (( Y=0; Y < HEIGHT; Y++ )) 
   do
     LINE_Y[${Y}]=$(line_y ${Y});
   done;
+
+}
+
+
+function display_print { # print current display
 
   clear;
   echo "STEP = ${STEP}  TIME = ${ARGS[0]}" 
@@ -116,21 +119,29 @@ function display_update_by_step { # $1 is step number
   SYMBOL=${ARGS[4]}
   
   SYMBOL_ID[${ID}]=${SYMBOL}
-  if (( ${COVERS[${ID}]} == ${TRAVELERS} ))
+  if (( ${ABOVE[${ID}]} == ${TRAVELERS} )) # if ${TRAVELERS} ABOVE ${ID} ...
   then
-    DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]=${COVERED_BY[${ID}]} # uncover previous position
+    DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]=${BELOW[${ID}]} # then uncover the lower occupant
   fi
-  COVERS[${COVERS[${ID}]}]=${COVERED_BY[${COVERED_BY[${ID}]}]}
-  COVERED_BY[${COVERED_BY[${ID}]}]=${COVERS[${COVERS[${ID}]}]};
+  # relations bypasss the  ${ID}
+  ABOVE[${BELOW[${ID}]}]=${ABOVE[${ID}]};
+  BELOW[${ABOVE[${ID}]}]=${BELOW[${ID}]};
+  
+  # TODO if (( Y != LAST_Y[${ID}] )) rebuild LINE_Y[${LAST_Y[${ID}]}]
+  LINE_Y[${LAST_Y[${ID}]}]=$(line_y ${LAST_Y[${ID}]})
   
   # new 'last' coordinates
   LAST_X[${ID}]=${X} 
   LAST_Y[${ID}]=${Y}
   # cover new position:
-  COVERED_BY[${ID}]=${DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]}
-  COVERS[${COVERED_BY[${ID}]}]=${ID}
-  COVERS[${ID}]=${TRAVELERS} # ${ID} is on top
-  DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]=${ID} # ocupy new position  
+  BELOW[${ID}]=${DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]}
+  ABOVE[${DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]}]=${ID}
+  # replace on display
+  ABOVE[${ID}]=${TRAVELERS} # ${ID} is on top
+  DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]=${ID} # ocupy the new position  
+  
+  # TODO rebuild 
+  LINE_Y[${LAST_Y[${ID}]}]=$(line_y ${LAST_Y[${ID}]})
 }
 
 
