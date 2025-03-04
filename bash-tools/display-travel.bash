@@ -52,7 +52,7 @@ function line_y {
     echo -n '|'
     for (( X=0; X < WIDTH; X++ ))
     do
-      echo -n "${SYMBOL_ID[${DISPLAY[$(d_idx $X $Y)]}]} |";
+      echo -n "${SYMBOL_ID[${DISPLAY[$(d_idx $X $Y)]}]}"' |';
     done;
     echo
 }
@@ -128,10 +128,13 @@ function display_update_by_step { # $1 is step number
   BELOW[${ABOVE[${ID}]}]=${BELOW[${ID}]};
   
   # TODO if (( Y != LAST_Y[${ID}] )) rebuild LINE_Y[${LAST_Y[${ID}]}]
-  LINE_Y[${LAST_Y[${ID}]}]=$(line_y ${LAST_Y[${ID}]})
+  if (( Y != LAST_Y[${ID}] ))
+  then
+    LINE_Y[${LAST_Y[${ID}]}]=$(line_y ${LAST_Y[${ID}]})
+  fi
   
   # new 'last' coordinates
-  LAST_X[${ID}]=${X} 
+  LAST_X[${ID}]=${X}
   LAST_Y[${ID}]=${Y}
   # cover new position:
   BELOW[${ID}]=${DISPLAY[$(d_idx ${LAST_X[${ID}]} ${LAST_Y[${ID}]})]}
@@ -151,18 +154,17 @@ clear;
 echo "START"
 display_reset; # test reset
 display_print; # test display printing
-read  ;
+echo -n "TO STEP? "
+read TO_STEP
 
 for (( STEP=START_STEP; STEP< TAB_LENGTH; STEP++ ))
 do
   display_update_by_step ${STEP} ;
   display_print ;
-  if (( DELTA > 0 ));
+  if (( TO_STEP <= STEP  ));
   then
-    DELTA=$(( DELTA - 1 ))
-  else
-    echo -n "STEPS? " 
-    read DELTA
+    echo -n "TO STEP? "
+    read TO_STEP
   fi;
 done
 
