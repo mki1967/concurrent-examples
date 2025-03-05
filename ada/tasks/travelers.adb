@@ -8,7 +8,7 @@ procedure  Travelers is
 
 -- Travelers moving on the board
 
-  Nr_Of_Travelers : constant Integer :=10;
+  Nr_Of_Travelers : constant Integer :=15;
 
   Min_Steps : constant Integer := 10 ;
   Max_Steps : constant Integer := 100 ;
@@ -18,8 +18,8 @@ procedure  Travelers is
 
 -- 2D Board with torus topology
 
-  Board_Width  : constant Integer := 20;
-  Board_Height : constant Integer := 20;
+  Board_Width  : constant Integer := 15;
+  Board_Height : constant Integer := 15;
 
 -- Timing
 
