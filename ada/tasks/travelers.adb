@@ -158,9 +158,7 @@ procedure  Travelers is
     end Make_Step;
 
   begin
-    -- Put_Line("Before Init: "); -- debug
     accept Init(Id: Integer; Seed: Integer; Symbol: Character) do
-      -- Put_Line("Init: " & Integer'Image(Id) & Character'Image( Symbol ) ); -- debug
       Reset(G, Seed); 
       Traveler.Id := Id;
       Traveler.Symbol := Symbol;
@@ -182,7 +180,7 @@ procedure  Travelers is
     end Start;
 
     for Step in 0 .. Nr_of_Steps loop
-      delay Min_Delay+(Max_Delay-Min_Delay)*Duration(Random(G)); -- TODO ...
+      delay Min_Delay+(Max_Delay-Min_Delay)*Duration(Random(G));
       -- do action ...
       Make_Step;
       Store_Trace;
@@ -194,11 +192,9 @@ procedure  Travelers is
 
 -- local for main task
 
---  Travel_Tasks: array (0 .. Nr_Of_Travelers-1) of access Traveler_Task_Type; -- for tests
   Travel_Tasks: array (0 .. Nr_Of_Travelers-1) of Traveler_Task_Type; -- for tests
   Symbol : Character := 'A';
 begin 
-  -- Put_Line( "Duration'Small =" & Duration'Image(Duration'Small) );
   
   -- Prit the line with the parameters needed for display script:
   Put_Line(
@@ -208,15 +204,9 @@ begin
       Integer'Image( Board_Height )      
     );
 
--- create access tasks
---  for I in Travel_Tasks'Range loop
---    Put_Line("creating in main: " & Integer'Image(I)); -- debug
---    Travel_Tasks(I):= new Traveler_Task_Type;
---  end loop;
 
   -- init tarvelers tasks
   for I in Travel_Tasks'Range loop
-    -- Put_Line("Init in main: " & Integer'Image(I) & Character'Image( Symbol )); -- debug
     Travel_Tasks(I).Init( I, Seeds(I+1), Symbol );   -- `Seeds(I+1)` is ugly :-(
     Symbol := Character'Succ( Symbol );
   end loop;
