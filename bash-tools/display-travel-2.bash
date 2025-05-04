@@ -17,14 +17,13 @@ then
 fi;
 
 
-echo "TEST LABELS: "
-echo ${ARGS[4]} # TEST
+echo "LABELS: "
 
 read -a LABELS < <(echo ${ARGS[4]} | tr ';' ' ');
 
 echo ${LABELS[@]}
-echo ${LABELS[2]}
 
+echo -n $'\nPress "ENTER"'
 read;
 
 declare -i TRAVELERS=${ARGS[1]:? 'number of travelers missing'}
