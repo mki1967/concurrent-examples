@@ -4,6 +4,8 @@ FILE=${1? 'parameter ${1} should be the name of the travel history file'}
 
 mapfile <  <(sort <${FILE} -n -k 1) TAB
 
+set -f # disable file expansion
+
 TAB_LENGTH=${#TAB[@]}
 
 # echo "TAB_LENGTH = "${TAB_LENGTH} ## TEST
