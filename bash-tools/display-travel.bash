@@ -4,7 +4,7 @@ FILE=${1? 'parameter ${1} should be the name of the travel history file'}
 
 mapfile <  <(sort <${FILE} -n -k 1) TAB
 
-set -f # disable file expansion
+set -f # disable filename expansion
 
 TAB_LENGTH=${#TAB[@]}
 
